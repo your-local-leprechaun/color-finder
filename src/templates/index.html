@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Today's Challenge — Chromahunt{% endblock %}
+
+{% block content %}
+<section class="challenge-card">
+  <p class="date-label">{{ today }}</p>
+
+  {% if challenge %}
+    <div class="color-swatch"></div>
+    <h1 class="prompt-text">Challenge Prompt</h1>
+    <p class="prompt-sub">Find something that matches this color and submit your photo.</p>
+    <a href="/submit" class="btn btn-primary">Submit a photo</a>
+  {% else %}
+    <h1 class="prompt-text">No challenge today yet.</h1>
+    <p class="prompt-sub">Check back soon — today's color is on its way.</p>
+  {% endif %}
+</section>
+{% endblock %}
