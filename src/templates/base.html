@@ -3,21 +3,24 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{% block title %}Chromahunt{% endblock %}</title>
+  <title>{% block title %}Hue Hunt{% endblock %}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
 </head>
 <body>
+  {% block header %}
   <header class="site-header">
-    <a href="/" class="logo">Chromahunt</a>
+    <a href="/" class="logo">Hue Hunt</a>
     <nav>
       {% if session.get('username') %}
         <span class="username">{{ session['username'] }}</span>
         <span class="streak" title="Current streak">🔥 {{ session.get('streak', 0) }}</span>
+        <a href="/logout" class="btn btn-ghost">Log out</a>
       {% else %}
         <a href="/login" class="btn btn-ghost">Sign in</a>
       {% endif %}
     </nav>
   </header>
+  {% endblock %}
 
   <main class="container">
     {% with messages = get_flashed_messages(with_categories=true) %}

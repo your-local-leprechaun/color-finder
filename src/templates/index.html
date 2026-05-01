@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Today's Challenge — Chromahunt{% endblock %}
+{% block title %}Today's Challenge — Hue Hunt{% endblock %}
 
 {% block content %}
 <section class="challenge-card">
@@ -9,10 +9,124 @@
     <div class="color-swatch"></div>
     <h1 class="prompt-text">Challenge Prompt</h1>
     <p class="prompt-sub">Find something that matches this color and submit your photo.</p>
-    <a href="/submit" class="btn btn-primary">Submit a photo</a>
   {% else %}
     <h1 class="prompt-text">No challenge today yet.</h1>
     <p class="prompt-sub">Check back soon — today's color is on its way.</p>
   {% endif %}
+
+  {% if session.get('user_id') %}
+    <button class="btn-camera" id="open-camera" aria-label="Open camera">
+      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
+        <circle cx="12" cy="13" r="3"/>
+      </svg>
+      Take a Photo
+    </button>
+  {% endif %}
 </section>
+
+{# ── Camera overlay ── #}
+<div class="camera-overlay hidden" id="camera-overlay">
+  <div class="camera-shell">
+
+    <div class="camera-view" id="camera-view">
+      <video class="camera-feed" id="camera-feed" autoplay playsinline muted></video>
+      <canvas class="camera-canvas hidden" id="camera-canvas"></canvas>
+    </div>
+
+    <div class="camera-controls" id="controls-live">
+      <button class="cam-btn cam-btn--close" id="camera-close" aria-label="Close">✕</button>
+      <button class="cam-btn cam-btn--shutter" id="camera-shutter" aria-label="Take photo"></button>
+      <button class="cam-btn cam-btn--flip" id="camera-flip" aria-label="Flip camera">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/>
+          <path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/>
+          <path d="m8 13 4-4 4 4"/><path d="M12 9v8"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="camera-controls hidden" id="controls-preview">
+      <button class="cam-btn cam-btn--retake" id="camera-retake">Retake</button>
+      <button class="cam-btn cam-btn--use" id="camera-use">Use Photo</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  const overlay      = document.getElementById('camera-overlay');
+  const video        = document.getElementById('camera-feed');
+  const canvas       = document.getElementById('camera-canvas');
+  const controlsLive = document.getElementById('controls-live');
+  const controlsPrev = document.getElementById('controls-preview');
+
+  let stream = null;
+  let facingMode = 'environment';
+
+  async function startCamera() {
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode, width: { ideal: 1920 }, height: { ideal: 1080 } },
+        audio: false,
+      });
+      video.srcObject = stream;
+      video.classList.remove('hidden');
+      canvas.classList.add('hidden');
+      controlsLive.classList.remove('hidden');
+      controlsPrev.classList.add('hidden');
+    } catch (err) {
+      alert('Could not access camera: ' + err.message);
+      closeCamera();
+    }
+  }
+
+  function stopStream() {
+    if (stream) {
+      stream.getTracks().forEach(t => t.stop());
+      stream = null;
+    }
+  }
+
+  function closeCamera() {
+    stopStream();
+    overlay.classList.add('hidden');
+  }
+
+  function capture() {
+    canvas.width  = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+    stopStream();
+    video.classList.add('hidden');
+    canvas.classList.remove('hidden');
+    controlsLive.classList.add('hidden');
+    controlsPrev.classList.remove('hidden');
+  }
+
+  document.getElementById('open-camera').addEventListener('click', () => {
+    overlay.classList.remove('hidden');
+    startCamera();
+  });
+
+  document.getElementById('camera-close').addEventListener('click', closeCamera);
+  document.getElementById('camera-shutter').addEventListener('click', capture);
+
+  document.getElementById('camera-retake').addEventListener('click', () => {
+    startCamera();
+  });
+
+  document.getElementById('camera-flip').addEventListener('click', () => {
+    facingMode = facingMode === 'environment' ? 'user' : 'environment';
+    stopStream();
+    startCamera();
+  });
+
+  document.getElementById('camera-use').addEventListener('click', () => {
+    const imageData = canvas.toDataURL('image/jpeg', 0.9);
+    // TODO: submit imageData to server
+    console.log('Photo captured, ready to submit', imageData.slice(0, 50));
+    closeCamera();
+  });
+</script>
 {% endblock %}
