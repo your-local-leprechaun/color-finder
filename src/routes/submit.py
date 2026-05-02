@@ -65,6 +65,7 @@ def submit():
         "challenge": challenge.get("color_hex"),
         "username": session.get("username"),
         "user_id": user_id,
+        "colorblind": session.get("colorblind", False),
     })
 
     new_streak = model.update_streak(user_id, today)
@@ -93,6 +94,14 @@ def delete_post(post_id):
         pass  # Don't block deletion if GCS file is already gone
 
     model.delete_post(user_id, post_id)
+
+    today = request.cookies.get("local_date") or date.today().isoformat()
+    if post.get("challenge_date") == today:
+        user = model.get_user(user_id) or {}
+        new_streak = max(0, user.get("streak", 1) - 1)
+        model.upsert_user(user_id, {"last_submitted_date": None, "streak": new_streak})
+        session["streak"] = new_streak
+
     return jsonify({"ok": True}), 200
 
 

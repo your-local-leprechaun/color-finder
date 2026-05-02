@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{% block title %}Hue Hunt{% endblock %}</title>
+  <title>{% block title %}HueHunt{% endblock %}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
   <script>
-    const _today = new Date().toLocaleDateString('en-CA');
+  const _today = new Date().toLocaleDateString('en-CA');
     if (!document.cookie.split(';').some(c => c.trim() === 'local_date=' + _today)) {
       document.cookie = 'local_date=' + _today + ';path=/;SameSite=Lax';
       location.reload();
@@ -17,7 +17,7 @@
   {% block header %}
   <header class="site-header">
     <div class="site-header-inner">
-      <a href="/" class="logo">Hue Hunt</a>
+      <a href="/" class="logo">HueHunt</a>
       <nav>
         {% if session.get('username') %}
           <a href="/profile" class="username">{{ session['username'] }}</a>
@@ -40,6 +40,8 @@
     {% block content %}{% endblock %}
   </main>
 <script>
+  const _header = document.querySelector('.site-header');
+  if (_header) _header.style.animationDelay = -(Date.now() % 10000) / 1000 + 's';
   document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('img.post-img, img.feed-img').forEach(img => {
       if (img.complete) {

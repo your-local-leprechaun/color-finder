@@ -1,11 +1,12 @@
 {% extends "base.html" %}
-{% block title %}Today's Gallery — Hue Hunt{% endblock %}
+{% block title %}Today's Gallery — HueHunt{% endblock %}
 
 {% block content %}
+<a href="/about" class="home-about-link">More about HueHunt →</a>
 {% if submissions %}
   <div class="feed">
     {% for post in submissions %}
-      <div class="feed-card">
+      <div class="feed-card" style="border-color: {{ post.challenge or challenge.color_hex }}; border-width: 2px;">
         <div class="feed-card-header">
           {% if post.username %}
             <a href="/user/{{ post.username }}" class="feed-username">{{ post.username }}</a>
@@ -14,11 +15,12 @@
           {% endif %}
           {% set chip_color = post.challenge or challenge.color_hex %}
           <span class="feed-color-chip" style="background-color: {{ chip_color }}; color: {{ chip_color | text_color }};">{{ chip_color }}</span>
+          {% if post.colorblind %}<span class="colorblind-badge">👁 Colorblind</span>{% endif %}
           <span class="feed-date">{{ post.challenge_date | format_date('%b %d, %Y') }}</span>
         </div>
         <img
           src="{{ post.image_url }}"
-          alt="{{ post.alt_text or 'Hue Hunt submission' }}"
+          alt="{{ post.alt_text or 'HueHunt submission' }}"
           class="feed-img"
           loading="lazy"
         />

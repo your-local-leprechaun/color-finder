@@ -16,6 +16,17 @@ app.register_blueprint(submit_bp)
 model = db.get_model()
 
 
+@app.context_processor
+def inject_today_challenge():
+    from flask import request
+    try:
+        today = request.cookies.get("local_date") or date.today().isoformat()
+        challenge = model.get_or_create_challenge(today)
+        return {"today_challenge": challenge}
+    except Exception:
+        return {"today_challenge": None}
+
+
 @app.template_filter("format_date")
 def format_date(iso_str: str, fmt: str = "%B %d, %Y") -> str:
     try:
@@ -82,6 +93,23 @@ def post_detail(post_id):
     if not post:
         abort(404)
     return render_template("post_detail.html", post=post)
+
+
+@app.route("/profile/colorblind", methods=["POST"])
+def toggle_colorblind():
+    from flask import redirect, session, url_for
+    if not session.get("user_id"):
+        return redirect(url_for("auth.login"))
+    new_val = not session.get("colorblind", False)
+    model.upsert_user(session["user_id"], {"colorblind": new_val})
+    model.set_colorblind_on_all_posts(session["user_id"], new_val)
+    session["colorblind"] = new_val
+    return redirect(url_for("profile"))
+
+
+@app.route("/about")
+def about():
+    return render_template("about.html")
 
 
 @app.route("/health")

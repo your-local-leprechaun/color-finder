@@ -1,11 +1,12 @@
 {% extends "base.html" %}
-{% block title %}{{ session['username'] }} — Hue Hunt{% endblock %}
+{% block title %}{{ session['username'] }} — HueHunt{% endblock %}
 
 {% block content %}
 <div class="profile-header">
   <div class="profile-info">
     <h1 class="profile-username">{{ session['username'] }}</h1>
     <span class="profile-streak">🔥 {{ session.get('streak', 0) }} day streak</span>
+    {% if session.get('colorblind') %}<span class="colorblind-badge">👁 Colorblind</span>{% endif %}
   </div>
   <a href="/logout" class="btn-logout" aria-label="Log out" title="Log out" style="margin-left:auto">
     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -21,6 +22,11 @@
     <span class="stat-value">{{ posts | length }}</span>
     <span class="stat-label">Posts</span>
   </div>
+  <form action="/profile/colorblind" method="post" style="margin-left:auto">
+    <button type="submit" class="colorblind-toggle {% if session.get('colorblind') %}active{% endif %}">
+      👁 {{ 'Colorblind mode on' if session.get('colorblind') else 'Colorblind mode off' }}
+    </button>
+  </form>
 </div>
 
 {% if posts %}
@@ -28,6 +34,7 @@
     {% for post in posts %}
       <button
         class="post-tile"
+        style="outline: 3px solid {{ post.challenge or '#e8ff4d' }}; outline-offset: -3px;"
         data-id="{{ post.id }}"
         data-img="{{ post.image_url }}"
         data-alt="{{ post.alt_text or '' }}"
@@ -36,7 +43,7 @@
       >
         <img
           src="{{ post.image_url }}"
-          alt="{{ post.alt_text or 'Hue Hunt submission' }}"
+          alt="{{ post.alt_text or 'HueHunt submission' }}"
           class="post-img"
           loading="lazy"
         />
@@ -92,7 +99,7 @@
   function openModal(tile) {
     activeTile = tile;
     modalImg.src = tile.dataset.img;
-    modalImg.alt = tile.dataset.alt || 'Hue Hunt submission';
+    modalImg.alt = tile.dataset.alt || 'HueHunt submission';
     modalDate.textContent = tile.dataset.date;
     modalDesc.textContent = tile.dataset.alt;
     modalDesc.style.display = tile.dataset.alt ? 'block' : 'none';

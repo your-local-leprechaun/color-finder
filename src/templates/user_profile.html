@@ -1,11 +1,12 @@
 {% extends "base.html" %}
-{% block title %}{{ profile_user.username }} — Hue Hunt{% endblock %}
+{% block title %}{{ profile_user.username }} — HueHunt{% endblock %}
 
 {% block content %}
 <div class="profile-header">
   <div class="profile-info">
     <h1 class="profile-username">{{ profile_user.username }}</h1>
     <span class="profile-streak">🔥 {{ profile_user.get('streak', 0) }} day streak</span>
+    {% if profile_user.get('colorblind') %}<span class="colorblind-badge">👁 Colorblind</span>{% endif %}
   </div>
 </div>
 
@@ -21,6 +22,7 @@
     {% for post in posts %}
       <button
         class="post-tile"
+        style="outline: 3px solid {{ post.challenge or '#e8ff4d' }}; outline-offset: -3px;"
         data-id="{{ post.id }}"
         data-img="{{ post.image_url }}"
         data-alt="{{ post.alt_text or '' }}"
@@ -29,7 +31,7 @@
       >
         <img
           src="{{ post.image_url }}"
-          alt="{{ post.alt_text or 'Hue Hunt submission' }}"
+          alt="{{ post.alt_text or 'HueHunt submission' }}"
           class="post-img"
           loading="lazy"
         />
@@ -80,7 +82,7 @@
 
   function openModal(tile) {
     modalImg.src = tile.dataset.img;
-    modalImg.alt = tile.dataset.alt || 'Hue Hunt submission';
+    modalImg.alt = tile.dataset.alt || 'HueHunt submission';
     modalDate.textContent = tile.dataset.date;
     modalDesc.textContent = tile.dataset.alt;
     modalDesc.style.display = tile.dataset.alt ? 'block' : 'none';
