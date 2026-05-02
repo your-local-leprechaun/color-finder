@@ -26,11 +26,16 @@ a { color: inherit; text-decoration: none; }
 
 /* ── Header ───────────────────────────────────────────────── */
 .site-header {
+  border-bottom: 1px solid var(--border);
+}
+
+.site-header-inner {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  padding: 1rem 1.25rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1rem 1.25rem;
-  border-bottom: 1px solid var(--border);
 }
 
 .logo {
@@ -83,6 +88,19 @@ a { color: inherit; text-decoration: none; }
   border: 1px solid var(--border);
 }
 
+.btn-logout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  color: var(--muted);
+  flex-shrink: 0;
+  transition: color 0.15s, background 0.15s;
+}
+.btn-logout:hover { color: var(--text); background: var(--surface); }
+
 /* ── Challenge card ───────────────────────────────────────── */
 .challenge-card {
   text-align: center;
@@ -103,6 +121,28 @@ a { color: inherit; text-decoration: none; }
   border-radius: 50%;
   margin: 0 auto 1.5rem;
   box-shadow: 0 0 40px rgba(255,255,255,0.08);
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.color-swatch:hover {
+  transform: scale(1.06);
+  box-shadow: 0 0 60px rgba(255,255,255,0.14);
+}
+
+.color-fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 3rem;
+  cursor: pointer;
+}
+.color-fullscreen-hint {
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
 }
 
 .prompt-text {
@@ -115,6 +155,72 @@ a { color: inherit; text-decoration: none; }
 .prompt-sub {
   color: var(--muted);
   font-size: 0.9rem;
+}
+
+.gallery-locked {
+  margin-top: 0.75rem;
+}
+
+/* ── Gallery ──────────────────────────────────────────────── */
+.feed-color-chip {
+  font-family: monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.75rem;
+  border-radius: 4px;
+  color: rgba(0,0,0,0.5);
+  letter-spacing: 0.03em;
+  flex: 1;
+  text-align: center;
+}
+
+/* ── Feed ─────────────────────────────────────────────────── */
+.feed {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.feed-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.feed-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding: 0.65rem 0.9rem;
+}
+
+.feed-username {
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.feed-date {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.feed-img {
+  width: 100%;
+  display: block;
+  object-fit: cover;
+  max-height: 480px;
+}
+
+.feed-caption {
+  padding: 0.6rem 0.9rem 0.75rem;
+  font-size: 0.875rem;
+  color: var(--muted);
+  line-height: 1.5;
 }
 
 /* ── Profile page ─────────────────────────────────────────── */
@@ -283,9 +389,24 @@ a { color: inherit; text-decoration: none; }
   gap: 0.4rem;
 }
 
+.post-detail-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
 .post-detail-date {
   font-size: 0.8rem;
   color: var(--muted);
+}
+
+.post-detail-chip {
+  font-family: monospace;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.2rem 0.55rem;
+  border-radius: 4px;
+  letter-spacing: 0.03em;
 }
 
 .post-detail-description {
@@ -293,6 +414,21 @@ a { color: inherit; text-decoration: none; }
   line-height: 1.5;
   color: var(--text);
 }
+
+.btn-delete {
+  margin-top: 0.5rem;
+  background: transparent;
+  border: 1px solid #ff4d4d44;
+  color: #ff6b6b;
+  border-radius: var(--radius);
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  transition: background 0.15s;
+}
+.btn-delete:hover { background: #ff4d4d22; }
 
 /* ── Camera button ────────────────────────────────────────── */
 .btn-camera {

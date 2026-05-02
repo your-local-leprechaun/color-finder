@@ -1,5 +1,5 @@
 import os
-from datetime import date
+from datetime import date, datetime, timezone
 
 import db
 from flask import Flask, render_template
@@ -16,10 +16,31 @@ app.register_blueprint(submit_bp)
 model = db.get_model()
 
 
+@app.template_filter("text_color")
+def text_color(hex_color: str) -> str:
+    """Return #000 or #fff depending on which is more readable on the given background."""
+    hex_color = hex_color.lstrip("#")
+    r, g, b = int(hex_color[0:2], 16), int(hex_color[2:4], 16), int(hex_color[4:6], 16)
+    def linearize(c):
+        c /= 255
+        return c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4
+    luminance = 0.2126 * linearize(r) + 0.7152 * linearize(g) + 0.0722 * linearize(b)
+    return "#000000" if luminance > 0.179 else "#ffffff"
+
+
 @app.route("/")
 def index():
+    from flask import session
     today = date.today().isoformat()
-    return render_template("index.html", today=today)
+    challenge = model.get_or_create_challenge(today)
+    submitted = (
+        model.has_submitted_today(session["user_id"], today)
+        if session.get("user_id") else False
+    )
+    if submitted:
+        submissions = model.get_today_submissions(today)
+        return render_template("gallery.html", today=today, challenge=challenge, submissions=submissions)
+    return render_template("index.html", today=today, challenge=challenge)
 
 
 @app.route("/profile")

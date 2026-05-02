@@ -1,16 +1,21 @@
 import base64
 import os
 import uuid
-from datetime import datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 
 from flask import Blueprint, jsonify, make_response, redirect, request, session
 from google.cloud import storage
 
 submit_bp = Blueprint("submit", __name__)
 
+_storage_client: storage.Client | None = None
+
 
 def _gcs_bucket():
-    return storage.Client().bucket(os.environ["GCS_BUCKET"])
+    global _storage_client
+    if _storage_client is None:
+        _storage_client = storage.Client()
+    return _storage_client.bucket(os.environ["GCS_BUCKET"])
 
 
 def _upload_image(data_url: str, user_id: str) -> str:
@@ -19,7 +24,7 @@ def _upload_image(data_url: str, user_id: str) -> str:
     image_bytes = base64.b64decode(encoded)
     ext = "jpg" if "jpeg" in header else "png"
 
-    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    today = date.today().isoformat()
     blob_name = f"posts/{user_id}/{today}/{uuid.uuid4()}.{ext}"
 
     blob = _gcs_bucket().blob(blob_name)
@@ -49,15 +54,46 @@ def submit():
 
     image_url = f"/image/{blob_name}"
 
+    today = date.today().isoformat()
     from app import model
+    challenge = model.get_or_create_challenge(today)
     post_id = model.create_post(user_id, {
         "date": datetime.now(timezone.utc),
+        "challenge_date": today,
         "image_url": image_url,
         "alt_text": alt_text,
-        "challenge": None,
+        "challenge": challenge.get("color_hex"),
+        "username": session.get("username"),
+        "user_id": user_id,
     })
 
+    new_streak = model.update_streak(user_id, today)
+    session["streak"] = new_streak
+
     return jsonify({"post_id": post_id, "image_url": image_url}), 200
+
+
+@submit_bp.route("/post/<post_id>", methods=["DELETE"])
+def delete_post(post_id):
+    if not session.get("user_id"):
+        return jsonify({"error": "Not logged in"}), 401
+
+    user_id = session["user_id"]
+    from app import model
+
+    post = model.get_post(user_id, post_id)
+    if not post:
+        return jsonify({"error": "Post not found"}), 404
+
+    # Delete from GCS — image_url is stored as /image/<blob_name>
+    blob_name = post["image_url"].removeprefix("/image/")
+    try:
+        _gcs_bucket().blob(blob_name).delete()
+    except Exception:
+        pass  # Don't block deletion if GCS file is already gone
+
+    model.delete_post(user_id, post_id)
+    return jsonify({"ok": True}), 200
 
 
 @submit_bp.route("/image/<path:blob_name>")

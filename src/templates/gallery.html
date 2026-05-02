@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Today's Gallery — Hue Hunt{% endblock %}
+
+{% block content %}
+{% if submissions %}
+  <div class="feed">
+    {% for post in submissions %}
+      <div class="feed-card">
+        <div class="feed-card-header">
+          <span class="feed-username">{{ post.username or 'Anonymous' }}</span>
+          {% set chip_color = post.challenge or challenge.color_hex %}
+          <span class="feed-color-chip" style="background-color: {{ chip_color }}; color: {{ chip_color | text_color }};">{{ chip_color }}</span>
+          <span class="feed-date">{{ post.date.strftime('%b %d, %Y') if post.date else '' }}</span>
+        </div>
+        <img
+          src="{{ post.image_url }}"
+          alt="{{ post.alt_text or 'Hue Hunt submission' }}"
+          class="feed-img"
+          loading="lazy"
+        />
+        {% if post.alt_text %}
+          <p class="feed-caption">{{ post.alt_text }}</p>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="empty-state">
+    <p>No other submissions yet — you might be first!</p>
+  </div>
+{% endif %}
+{% endblock %}

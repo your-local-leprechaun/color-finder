@@ -8,7 +8,13 @@
     <h1 class="profile-username">{{ session['username'] }}</h1>
     <span class="profile-streak">🔥 {{ session.get('streak', 0) }} day streak</span>
   </div>
-  <a href="/logout" class="btn btn-ghost" style="margin-left:auto">Log out</a>
+  <a href="/logout" class="btn-logout" aria-label="Log out" title="Log out" style="margin-left:auto">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+      <polyline points="16 17 21 12 16 7"/>
+      <line x1="21" y1="12" x2="9" y2="12"/>
+    </svg>
+  </a>
 </div>
 
 <div class="profile-stats">
@@ -23,6 +29,7 @@
     {% for post in posts %}
       <button
         class="post-tile"
+        data-id="{{ post.id }}"
         data-img="{{ post.image_url }}"
         data-alt="{{ post.alt_text or '' }}"
         data-date="{{ post.date.strftime('%B %d, %Y') if post.date else '' }}"
@@ -54,24 +61,52 @@
     <button class="post-modal-close" id="modal-close" aria-label="Close">✕</button>
     <img src="" alt="" class="post-modal-img" id="modal-img" />
     <div class="post-modal-body">
-      <span class="post-detail-date" id="modal-date"></span>
+      <div class="post-detail-meta">
+        <span class="post-detail-date" id="modal-date"></span>
+        <span class="post-detail-chip" id="modal-chip"></span>
+      </div>
       <p class="post-detail-description" id="modal-desc"></p>
+      <button class="btn-delete" id="modal-delete">Delete post</button>
     </div>
   </div>
 </div>
 
 <script>
+  function chipTextColor(hex) {
+    const h = hex.replace('#', '');
+    const r = parseInt(h.slice(0,2), 16) / 255;
+    const g = parseInt(h.slice(2,4), 16) / 255;
+    const b = parseInt(h.slice(4,6), 16) / 255;
+    const lin = c => c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+    const lum = 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+    return lum > 0.179 ? '#000000' : '#ffffff';
+  }
+
   const modal    = document.getElementById('post-modal');
   const modalImg = document.getElementById('modal-img');
   const modalDate = document.getElementById('modal-date');
+  const modalChip = document.getElementById('modal-chip');
   const modalDesc = document.getElementById('modal-desc');
+  const modalDelete = document.getElementById('modal-delete');
+  let activeTile = null;
 
   function openModal(tile) {
+    activeTile = tile;
     modalImg.src = tile.dataset.img;
     modalImg.alt = tile.dataset.alt || 'Hue Hunt submission';
     modalDate.textContent = tile.dataset.date;
     modalDesc.textContent = tile.dataset.alt;
     modalDesc.style.display = tile.dataset.alt ? 'block' : 'none';
+    const hex = tile.dataset.challenge;
+    if (hex) {
+      modalChip.textContent = hex;
+      modalChip.style.background = hex;
+      modalChip.style.color = chipTextColor(hex);
+      modalChip.style.display = 'inline-block';
+    } else {
+      modalChip.style.display = 'none';
+    }
+    modalDelete.dataset.id = tile.dataset.id;
     modal.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
   }
@@ -91,6 +126,17 @@
 
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') closeModal();
+  });
+
+  modalDelete.addEventListener('click', async () => {
+    if (!confirm('Delete this post? This cannot be undone.')) return;
+    const postId = modalDelete.dataset.id;
+    const res = await fetch(`/post/${postId}`, { method: 'DELETE' });
+    if (res.ok) {
+      window.location.reload();
+    } else {
+      alert('Could not delete post.');
+    }
   });
 </script>
 {% endblock %}
