@@ -1,8 +1,11 @@
-{# Home page shown to users who haven't submitted today. Displays the daily color
-   swatch, the challenge prompt, and the camera UI for submitting a photo. #}
+{# Home page shown to users who haven't submitted today. Displays the daily
+color swatch, the challenge prompt, and the camera UI for submitting a photo. #}
 {% extends "base.html" %} {% block title %}Today's Challenge — HueHunt{%
 endblock %} {% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/camera.css') }}" />
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/camera.css') }}"
+/>
 {% endblock %} {% block content %}
 <section class="challenge-card">
   <a href="/about" class="home-about-link">What is HueHunt? →</a>
